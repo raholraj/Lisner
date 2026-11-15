@@ -21,31 +21,34 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: 'gradle'
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-34 build-tools;34.0.0'
 
-      - name: Accept Android licenses
+      - name: Accept licenses
         run: yes | sdkmanager --licenses || true
 
       - name: Make gradlew executable
         run: chmod +x gradlew
 
-      - name: Build Debug APK
+      - name: Generate wrapper jar if missing
         run: |
           if [ ! -f gradle/wrapper/gradle-wrapper.jar ]; then
             gradle wrapper --gradle-version 8.2 || true
           fi
-          ./gradlew assembleDebug --stacktrace --no-daemon
+
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --stacktrace --no-daemon
 
       - name: List APK
-        run: find app/build/outputs -name "*.apk" -ls
+        run: find app/build/outputs -name "*.apk" -ls || true
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
           name: Listener-debug-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
           retention-days: 14
