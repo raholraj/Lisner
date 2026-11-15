@@ -12,12 +12,32 @@ public class MainActivity extends Activity {
 
     @Override protected void onCreate(Bundle b) {
         super.onCreate(b);
-        if (Build.VERSION.SDK_INT >= 23 &&
-                checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{
+        String[] perms;
+        if (Build.VERSION.SDK_INT >= 33) {
+            perms = new String[]{
                     Manifest.permission.RECORD_AUDIO,
-                    Manifest.permission.POST_NOTIFICATIONS}, REQ);
-        } else start();
+                    Manifest.permission.CAMERA,
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.POST_NOTIFICATIONS
+            };
+        } else {
+            perms = new String[]{
+                    Manifest.permission.RECORD_AUDIO,
+                    Manifest.permission.CAMERA,
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+            };
+        }
+        boolean need = false;
+        for (String p : perms) {
+            if (checkSelfPermission(p) != PackageManager.PERMISSION_GRANTED) {
+                need = true;
+                break;
+            }
+        }
+        if (need) requestPermissions(perms, REQ);
+        else start();
     }
 
     @Override public void onRequestPermissionsResult(int rc, String[] p, int[] r) {
